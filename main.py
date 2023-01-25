@@ -29,14 +29,27 @@ def main():
     run_button = tk.Button(root, text="Search", width=10, command=lambda: query_music())
     run_button.grid(row=1, column=2, columnspan=2, padx=15, pady=10)
 
+    # text = tk.StringVar()
+    # text.set("Test")
+    # output = tk.Label(root, textvariable=text, width=70, height=2)
+    # output.grid(row=1, column=4)
+    output = tk.Text(root)
+    output.grid(row=1, column=4)
+
     def query_music():
         genre = input_entry1.get()
         q = query()
         res = q.query_main(genre=genre)
+        album = []
+        website = []
         for row in res:
-            print(row[0], row[2], row[4], "https://open.spotify.com/album/" + row[-1])
+            print(row[0], row[4], "https://open.spotify.com/album/" + row[-1])
 
-
+            album.append(row[0].n3().strip('"@en'))
+            website.append(row[-1].n3().strip('"@en'))
+        for i in range(len(album)):
+            output.insert('insert', 'Album name = ' + album[i] + '\n' + 'Spotify Address = ' +
+                          "https://open.spotify.com/album/" + website[i] + '\n\n')
     root.mainloop()
 
 
