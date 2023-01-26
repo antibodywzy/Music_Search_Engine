@@ -38,8 +38,9 @@ def main():
 
     def query_music():
         genre = input_entry1.get()
+        performer = input_entry2.get()
         q = query()
-        res = q.query_main(genre=genre)
+        res = q.query_main(genre=genre, performer=performer)
         album = []
         website = []
         for row in res:
