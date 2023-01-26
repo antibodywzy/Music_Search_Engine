@@ -18,7 +18,7 @@ class query:
         genre = []
         id = []
         for row in qresult:
-            temp = row[1].n3().strip('"@en')
+            temp = row[1].n3()[1:-4]
             genre.append(temp)
             temp = row[0].n3().strip('<http://www.wikidata.org/entity/>')
             id.append(temp)
@@ -50,7 +50,7 @@ class query:
         performer = []
         id = []
         for row in qresult:
-            temp = row[1].n3().strip('"@en')
+            temp = row[1].n3()[1:-4]
             performer.append(temp)
             temp = row[0].n3().strip('<http://www.wikidata.org/entity/>')
             id.append(temp)
@@ -63,6 +63,11 @@ class query:
         return performer_list.get(performer)
 
     def get_result(self, genre_id, performer_id):
+        if not genre_id:
+            genre_id = '?genre'
+        if not performer_id:
+            performer_id = '?performer'
+
         g = rdflib.ConjunctiveGraph('SPARQLStore')
         g.open('https://query.wikidata.org/sparql')
         start_date = "1940-01-01T00:00:00Z"
@@ -71,8 +76,8 @@ class query:
                 SELECT DISTINCT  ?albumLabel ?genre ?genreLabel ?performer ?performerLabel ?language ?languageLabel ?release ?spotify     WHERE {{
                   ?album wdt:P31 wd:Q482994.
                   ?album wdt:P577 ?pubdate.
-                  ?album wdt:P136 ?genre.
-                  ?album wdt:P175 wd:{performer_id}.
+                  ?album wdt:P136 {genre_id}.
+                  ?album wdt:P175 {performer_id}.
                   ?album wdt:P407 ?language.
                   ?album wdt:P577 ?release.
                   ?album wdt:P2205 ?spotify.
@@ -88,9 +93,18 @@ class query:
         return qresult
 
     def query_main(self, genre, performer):
-        genre_list = self.get_genre_list()
-        genre_id = self.get_genre_id(genre, genre_list)
-        performer_list = self.get_performer_list()
-        performer_id = self.get_performer_id(performer, performer_list)
-        res = self.get_result(genre_id, performer_id)
+        genre_id = None
+        performer_id = None
+        if genre:
+            genre_list = self.get_genre_list()
+            genre_id = self.get_genre_id(genre, genre_list)
+            genre_id = 'wd:' + genre_id
+        if performer:
+            performer_list = self.get_performer_list()
+            performer_id = self.get_performer_id(performer, performer_list)
+            performer_id = 'wd:' + performer_id
+        if genre or performer:
+            res = self.get_result(genre_id, performer_id)
+        else:
+            return None
         return res
