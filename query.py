@@ -28,24 +28,24 @@ class query:
         return res
 
     def get_genre_id(self, genre, genre_list):
-        return genre_list[genre]
+        return genre_list.get(genre)
 
     def get_performer_list(self):
         g = rdflib.ConjunctiveGraph('SPARQLStore')
         g.open('https://query.wikidata.org/sparql')
 
         query = """
-
-                            SELECT DISTINCT ?item ?itemLabel WHERE {
-          SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
-          {
-            SELECT DISTINCT ?item WHERE {
-              ?item p:P175 ?statement0.
-              ?statement0 (ps:P175/(wdt:P279*)) wd:Q639669.
-            }
-          }
+        SELECT ?artist ?artistLabel
+        WHERE {
+          {?artist wdt:P106 wd:Q639669.}
+          ?artist wdt:P569 ?birthdate.
+          FILTER (?birthdate >= "1940-01-01T00:00:00Z"^^xsd:dateTime && ?birthdate <= "2000-12-31T00:00:00Z"^^xsd:dateTime)
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "en".}
         }
-                            """
+
+
+
+        """
         qresult = g.query(query)
         performer = []
         id = []
@@ -60,13 +60,13 @@ class query:
         return res
 
     def get_performer_id(self, performer, performer_list):
-        return performer_list[performer]
+        return performer_list.get(performer)
 
     def get_result(self, genre_id, performer_id):
         g = rdflib.ConjunctiveGraph('SPARQLStore')
         g.open('https://query.wikidata.org/sparql')
-        start_date = "1470-01-01T00:00:00Z"
-        end_date = "1990-12-31T00:00:00Z"
+        start_date = "1940-01-01T00:00:00Z"
+        end_date = "2000-12-31T00:00:00Z"
         query = f"""
                 SELECT DISTINCT  ?albumLabel ?genre ?genreLabel ?performer ?performerLabel ?language ?languageLabel ?release ?spotify     WHERE {{
                   ?album wdt:P31 wd:Q482994.
